@@ -142,7 +142,7 @@ switch
         [Regex]::Match( $inDatas[$dataIndex].($conf.StateColumnName), $conf.StateRegexEnd)
     )
     {
-        $null = $nameCallStack.Push($inDatas[$dataIndex].name)
+        $null = $nameCallStack.Push([Regex]::Replace( $inDatas[$dataIndex].($conf.NameColumnName), $conf.NameReplaceRegexFrom, $conf.NameReplaceRegexTo ))
     }
 
     # data index
