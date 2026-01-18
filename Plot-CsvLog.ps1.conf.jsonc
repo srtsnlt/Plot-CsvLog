@@ -1,0 +1,16 @@
+{
+    // Plot settings
+    "PlotEnd": "0:00:10.000",
+    "PlotSpan": "0:00:00.100",
+
+    // Input csv file settings
+    "InFileName": "in.csv",
+
+    "NameColumnName": "Name",
+    "NameReplaceRegexFrom": "^(.*)$",
+    "NameReplaceRegexTo": "$1",
+
+    "StateColumnName": "State",
+    "StateRegexStart": "^Start$",
+    "StateRegexEnd": "^End$"
+}
