@@ -6,6 +6,9 @@
     // Input csv file settings
     "InFileName": "in.csv",
 
+    "TimeColumnName": "Time",
+    "TimeFormat": "h\\:mm\\:ss\\.fff",
+
     "NameColumnName": "Name",
     "NameReplaceRegexFrom": "^(.*)$",
     "NameReplaceRegexTo": "$1",

@@ -42,6 +42,10 @@ switch
         continue
     }
 
+    $dataRecordTime = $null
+    $dataRecordState = $null
+    $dataRecordName = $null
+
     # seek out to cur data end
     while
     (
@@ -53,7 +57,12 @@ switch
         # read cur data
         # data records
         $dataRecordPrev = $inDatas[$dataIndex -1]
+        $dataRecordPrevTime = [TimeSpan]::ParseExact( $dataRecordPrev.($conf.TimeColumnName), $conf.TimeFormat, [cultureinfo]::InvariantCulture)
+
         $dataRecord = $inDatas[$dataIndex]
+        $dataRecordTime =     [TimeSpan]::ParseExact( $dataRecord.($conf.TimeColumnName),     $conf.TimeFormat, [cultureinfo]::InvariantCulture)
+        $dataRecordState = $dataRecord.($conf.StateColumnName)
+        $dataRecordName = [Regex]::Replace( $inDatas[$dataIndex].($conf.NameColumnName), $conf.NameReplaceRegexFrom, $conf.NameReplaceRegexTo )
 
         # cur name
         $name = $nameCallStack.Pop()
@@ -62,9 +71,9 @@ switch
         # data time in cur span
         $dataTime =
         (
-            $curSpanEnd -lt [TimeSpan]$dataRecord.Time ? $curSpanEnd : [TimeSpan]$dataRecord.Time
+            $curSpanEnd -lt $dataRecordTime ? $curSpanEnd : $dataRecordTime
         ).Subtract(
-            $curSpanStart -gt [TimeSpan]$dataRecordPrev.Time ? $curSpanStart : [TimeSpan]$dataRecordPrev.Time
+            $curSpanStart -gt $dataRecordPrevTime ? $curSpanStart : $dataRecordPrevTime
         )
 
         # name time
@@ -77,14 +86,14 @@ switch
         # name stack
         if
         (
-            [Regex]::Match( $dataRecord.($conf.StateColumnName), $conf.StateRegexStart)
+            [Regex]::Match( $dataRecordState, $conf.StateRegexStart)
         )
         {
-            $null = $nameCallStack.Push($dataRecord.name)
+            $null = $nameCallStack.Push($dataRecordName)
         }
         elseif
         (
-            [Regex]::Match( $dataRecord.($conf.StateColumnName), $conf.StateRegexEnd)
+            [Regex]::Match($dataRecordState , $conf.StateRegexEnd)
         )
         {
             $null = $nameCallStack.Pop()
@@ -92,7 +101,7 @@ switch
 
         if
         (
-            [TimeSpan]$dataRecord.Time -ge $curSpanEnd
+            $dataRecordTime -ge $curSpanEnd
         )
         {
             break
@@ -121,7 +130,7 @@ switch
     if
     (
         $dataIndex -ge $inDatas.Count -1 -and
-        [TimeSpan]$inDatas[$dataIndex].Time -le $curSpanEnd
+        $dataRecordTime -le $curSpanEnd
     )
     {
         $dataReadEnd = $true
@@ -132,17 +141,17 @@ switch
     # name stack
     if
     (
-        [Regex]::Match( $inDatas[$dataIndex].($conf.StateColumnName), $conf.StateRegexStart)
+        [Regex]::Match( $dataRecordState, $conf.StateRegexStart)
     )
     {
         $null = $nameCallStack.Pop()
     }
     elseif
     (
-        [Regex]::Match( $inDatas[$dataIndex].($conf.StateColumnName), $conf.StateRegexEnd)
+        [Regex]::Match( $dataRecordState, $conf.StateRegexEnd)
     )
     {
-        $null = $nameCallStack.Push([Regex]::Replace( $inDatas[$dataIndex].($conf.NameColumnName), $conf.NameReplaceRegexFrom, $conf.NameReplaceRegexTo ))
+        $null = $nameCallStack.Push($dataRecordName)
     }
 
     # data index
